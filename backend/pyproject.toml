@@ -1,0 +1,24 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+cache_dir = ".venv/.cache/pytest"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["app", "tests"]
+cache-dir = ".venv/.cache/ruff"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.coverage.run]
+source = ["app"]
+data_file = ".venv/.cache/.coverage"
+omit = [
+  "app/domain/*",
+  "app/application/ports.py",
+  "app/application/use_cases.py",
+  "app/agent/ports.py",
+]

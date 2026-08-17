@@ -1,0 +1,3 @@
+# Persistence适配器插槽
+
+MVP使用SQLite，但应用层只依赖Repository和UnitOfWork端口。后续切换PostgreSQL时不得修改领域实体、Agent或用例接口。

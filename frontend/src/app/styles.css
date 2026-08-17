@@ -1,0 +1,161 @@
+:root {
+  color: #162019;
+  background: #f4f7f3;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px clamp(20px, 5vw, 72px);
+  color: #f7fff8;
+  background: #173f2a;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  color: #173f2a;
+  background: #b9f4c8;
+  font-weight: 800;
+}
+
+.brand strong,
+.brand small {
+  display: block;
+}
+
+.brand small {
+  margin-top: 2px;
+  color: #b8d1c0;
+}
+
+.status {
+  padding: 8px 12px;
+  border: 1px solid #4e745e;
+  border-radius: 999px;
+  color: #cce6d3;
+  font-size: 13px;
+}
+
+.page {
+  width: min(1100px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 64px 0 80px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #34754c;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.hero h1 {
+  max-width: 780px;
+  margin: 0;
+  font-size: clamp(34px, 6vw, 64px);
+  line-height: 1.05;
+}
+
+.hero > p:last-child {
+  max-width: 760px;
+  margin: 22px 0 0;
+  color: #506057;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.layer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 44px;
+}
+
+.layer-card,
+.flow-card {
+  padding: 24px;
+  border: 1px solid #dce7df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(24 63 42 / 6%);
+}
+
+.layer-card span {
+  color: #42815a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.layer-card h2,
+.flow-card h2 {
+  margin: 8px 0;
+  font-size: 20px;
+}
+
+.layer-card p,
+.flow-card p {
+  margin: 0;
+  color: #607067;
+  line-height: 1.65;
+}
+
+.flow-card {
+  margin-top: 16px;
+  background: #eef8f0;
+}
+
+.flow {
+  margin-top: 16px;
+  overflow-wrap: anywhere;
+  color: #285c3c;
+  font: 600 14px/1.8 "Cascadia Code", Consolas, monospace;
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    align-items: flex-start;
+  }
+
+  .status {
+    max-width: 130px;
+    text-align: center;
+  }
+
+  .page {
+    width: min(100% - 28px, 1100px);
+    padding-top: 42px;
+  }
+
+  .layer-grid {
+    grid-template-columns: 1fr;
+  }
+}

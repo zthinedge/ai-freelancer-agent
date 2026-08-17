@@ -259,13 +259,13 @@ skills/
 | 方法 | 路径 | 用途 |
 |---|---|---|
 | GET | `/api/health` | 健康检查及AI模式 |
-| GET | `/api/projects` | 项目列表 |
-| POST | `/api/projects/analyze` | 分析需求并保存项目 |
-| GET | `/api/projects/{id}` | 项目详情 |
-| DELETE | `/api/projects/{id}` | 删除项目 |
-| GET | `/api/agent-runs/{id}` | 查看Agent运行状态与步骤 |
-| POST | `/api/agent-runs/{id}/answers` | 提交澄清答案并继续工作流 |
-| POST | `/api/agent-runs/{id}/approve` | 人工确认范围与报价 |
+| GET | `/api/v1/projects` | 项目列表 |
+| POST | `/api/v1/projects` | 创建项目并启动Agent分析 |
+| GET | `/api/v1/projects/{id}` | 项目详情 |
+| DELETE | `/api/v1/projects/{id}` | 删除项目 |
+| GET | `/api/v1/agent-runs/{id}` | 查看Agent运行状态与步骤 |
+| POST | `/api/v1/agent-runs/{id}/answers` | 提交澄清答案并继续工作流 |
+| POST | `/api/v1/agent-runs/{id}/approve` | 人工确认范围与报价 |
 
 ## 9. 非功能需求
 
