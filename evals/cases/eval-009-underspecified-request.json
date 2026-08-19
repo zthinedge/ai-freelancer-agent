@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-009",
+  "title": "极度模糊的软件需求",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "未定义软件项目",
+    "client_request": "帮我做个软件，功能以后再说，越快越好，先告诉我多少钱。",
+    "service_type": "auto_detect",
+    "budget": null,
+    "deadline": "越快越好",
+    "hourly_rate": {"amount": "150.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "request_type", "value_contains": ["软件"]},
+    {"field": "urgency", "value_contains": ["越快越好"]},
+    {"field": "pricing_request", "value_contains": ["多少钱"]}
+  ],
+  "expected_missing_fields": ["目标用户", "核心问题", "使用平台", "核心功能", "交付物", "明确期限", "预算", "验收标准"],
+  "required_questions": [
+    {"field": "goal", "intent": "确认要解决的问题和目标用户"},
+    {"field": "core_flow", "intent": "确认最小可用版本必须完成的核心操作"},
+    {"field": "platform", "intent": "确认Web、移动端、桌面端或小程序"},
+    {"field": "deadline_budget", "intent": "确认明确日期和可接受预算范围"}
+  ],
+  "forbidden_behaviors": ["不得提前估时或报价", "不得替客户发明功能", "不得把越快越好解释为具体日期"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["至少识别六个缺失字段", "生成3至6个高价值问题", "未输出工时和金额"],
+    "human": ["问题先问目标和核心闭环，而不是颜色、技术栈等次要细节"],
+    "minimum_score": "0.90"
+  },
+  "tags": ["underspecified", "boundary", "clarification", "no_pricing"]
+}

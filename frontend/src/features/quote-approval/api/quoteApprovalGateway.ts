@@ -1,7 +1,7 @@
-import type { AgentRun, AgentRunId } from '../../../entities/agent-run/model/agentRun'
+import type { AgentRun } from '../../../entities/agent-run/model/agentRun'
+import type { QuoteApprovalDraft } from '../model/contracts'
 
 
 export interface QuoteApprovalGateway {
-  approve(runId: AgentRunId, note?: string): Promise<AgentRun>
-  reject(runId: AgentRunId, note: string): Promise<AgentRun>
+  submit(command: QuoteApprovalDraft): Promise<AgentRun>
 }

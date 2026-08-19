@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-002",
+  "title": "企业内部知识问答原型",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "内部知识问答助手",
+    "client_request": "想做一个给员工使用的AI知识问答网页，资料主要是PDF制度文件，希望回答能标注出处，先做一个可以演示的版本。",
+    "service_type": "ai_application",
+    "budget": {"amount": "12000.00", "currency": "CNY"},
+    "deadline": null,
+    "hourly_rate": {"amount": "180.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "target_users", "value_contains": ["员工"]},
+    {"field": "knowledge_source", "value_contains": ["PDF", "制度文件"]},
+    {"field": "citation", "value_contains": ["出处"]},
+    {"field": "delivery_stage", "value_contains": ["演示", "原型"]}
+  ],
+  "expected_missing_fields": ["文件数量与大小", "访问权限", "敏感数据等级", "准确率验收方式", "部署环境", "交付期限"],
+  "required_questions": [
+    {"field": "data_volume", "intent": "确认PDF数量、格式、大小和更新频率"},
+    {"field": "privacy", "intent": "确认制度文件是否敏感及可使用的模型和部署方式"},
+    {"field": "acceptance", "intent": "确认问答准确性和引用正确性的验收样本"},
+    {"field": "deadline", "intent": "确认原型交付期限"}
+  ],
+  "forbidden_behaviors": ["不得承诺回答百分之百准确", "不得默认把内部文件发送到外部模型", "不得将预算直接当成报价"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["识别PDF知识源和引用需求", "隐私与准确率问题均被覆盖", "未给出模型品牌或架构定论"],
+    "human": ["问题足以判断原型边界、数据风险和验收方式"],
+    "minimum_score": "0.85"
+  },
+  "tags": ["ai_application", "rag", "privacy", "citations"]
+}

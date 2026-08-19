@@ -1,5 +1,5 @@
 import type { ProjectId } from '../../project/model/project'
-
+import type { AgentState } from './agentContracts'
 
 export type AgentRunId = string
 
@@ -25,5 +25,5 @@ export type AgentRun = Readonly<{
   projectId: ProjectId
   status: AgentRunStatus
   currentStep: WorkflowStep | null
-  state: Readonly<Record<string, unknown>>
+  state: AgentState
 }>

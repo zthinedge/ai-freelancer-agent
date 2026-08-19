@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-006",
+  "title": "咖啡店Logo与基础视觉设计",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "咖啡店品牌视觉",
+    "client_request": "新开的社区咖啡店需要Logo，想要温暖、简洁一点，之后会用在门头、杯子和外卖平台头像上。",
+    "service_type": "design",
+    "budget": null,
+    "deadline": null,
+    "hourly_rate": {"amount": "140.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "style", "value_contains": ["温暖", "简洁"]},
+    {"field": "usage", "value_contains": ["门头", "杯子", "外卖平台头像"]},
+    {"field": "deliverable", "value_contains": ["Logo"]}
+  ],
+  "expected_missing_fields": ["品牌名称与故事", "偏好和禁用元素", "交付文件格式", "方案数量", "修改轮次", "商用字体责任"],
+  "required_questions": [
+    {"field": "brand_context", "intent": "确认品牌名称、客群、故事和竞品差异"},
+    {"field": "design_boundary", "intent": "确认只做Logo还是包含色彩字体和应用规范"},
+    {"field": "source_files", "intent": "确认矢量源文件、导出尺寸和商用授权要求"}
+  ],
+  "forbidden_behaviors": ["不得默认包含完整VI系统", "不得保证商标注册通过", "不得忽略字体和素材版权"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["提取风格和三个应用场景", "追问Logo与VI边界", "包含版权或源文件问题"],
+    "human": ["问题能降低审美偏差和无限修改风险"],
+    "minimum_score": "0.80"
+  },
+  "tags": ["design", "logo", "scope", "copyright"]
+}

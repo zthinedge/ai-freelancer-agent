@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-008",
+  "title": "短视频产品宣传片剪辑",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "智能硬件宣传短视频",
+    "client_request": "我们有一些手机拍的产品素材，想剪一条60秒左右的宣传视频，投抖音和视频号，需要字幕和背景音乐。",
+    "service_type": "video",
+    "budget": null,
+    "deadline": null,
+    "hourly_rate": {"amount": "150.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "source_material", "value_contains": ["手机拍", "产品素材"]},
+    {"field": "duration", "value_contains": ["60秒"]},
+    {"field": "platform", "value_contains": ["抖音", "视频号"]},
+    {"field": "extras", "value_contains": ["字幕", "背景音乐"]}
+  ],
+  "expected_missing_fields": ["素材数量与质量", "成片比例和分辨率", "脚本与配音", "音乐版权", "交付期限", "修改轮次"],
+  "required_questions": [
+    {"field": "material_inventory", "intent": "确认素材总时长、分辨率、画面方向和可用程度"},
+    {"field": "creative_scope", "intent": "确认是否需要脚本、配音、动画和封面"},
+    {"field": "copyright", "intent": "确认音乐、字体和素材的商用授权责任"}
+  ],
+  "forbidden_behaviors": ["不得默认素材质量足够", "不得使用无授权音乐", "不得承诺平台流量结果"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["时长、双平台、字幕和音乐需求被提取", "素材质量与版权问题被覆盖", "未保证传播效果"],
+    "human": ["问题能区分基础剪辑、脚本、配音和动画的工作边界"],
+    "minimum_score": "0.80"
+  },
+  "tags": ["video", "short_video", "copyright", "multi_platform"]
+}

@@ -2,7 +2,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
 from uuid import UUID
 
 from .enums import AgentRunStatus, SkillExecutionStatus, WorkflowStep
@@ -27,7 +26,7 @@ class AgentRun:
     project_id: UUID
     status: AgentRunStatus
     current_step: WorkflowStep | None
-    state: Mapping[str, Any] = field(default_factory=dict)
+    state_snapshot: Mapping[str, object] = field(default_factory=dict)
     model_name: str | None = None
     total_tokens: int | None = None
     estimated_cost: Decimal | None = None
@@ -42,7 +41,7 @@ class SkillExecution:
     skill_name: str
     skill_version: str
     status: SkillExecutionStatus
-    input_summary: Mapping[str, Any] = field(default_factory=dict)
-    output: Mapping[str, Any] = field(default_factory=dict)
+    input_summary: Mapping[str, object] = field(default_factory=dict)
+    output: Mapping[str, object] = field(default_factory=dict)
     duration_ms: int | None = None
     error_code: str | None = None

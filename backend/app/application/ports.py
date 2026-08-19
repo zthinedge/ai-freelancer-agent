@@ -5,6 +5,18 @@ from uuid import UUID
 
 from app.domain.models import AgentRun, Project, SkillExecution
 
+from .contracts import AgentRunView, ProjectView
+
+
+class ProjectAnalysisStore(Protocol):
+    async def save_project(self, project: ProjectView) -> None: ...
+
+    async def save_run(self, run: AgentRunView) -> None: ...
+
+    async def get_run(self, run_id: UUID) -> AgentRunView | None: ...
+
+    async def list_projects(self) -> Sequence[ProjectView]: ...
+
 
 class ProjectRepository(Protocol):
     async def add(self, project: Project) -> None: ...

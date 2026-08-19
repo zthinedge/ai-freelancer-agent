@@ -4,16 +4,19 @@
 
 ## 当前状态
 
-当前为`v0.2 Architecture Baseline`，已完成P1架构骨架，尚未实现具体业务函数：
+当前为`v0.3 Intake & Clarification MVP`，已完成P1-P4的架构、评测契约、后端Agent最小闭环和前端联调界面：
 
 - 后端模块化单体与清洁架构边界；
 - Agent状态、工作流、Skill、Tool和模型端口；
 - 六个版本化Skill Manifest；
 - 前端Feature分层与领域类型；
-- 可启动的前后端架构占位页和健康检查；
-- 后端依赖规则测试与Skill Manifest测试。
+- 可交互的项目录入、搜索筛选、Agent步骤与澄清回答界面；
+- 项目、AgentRun和澄清提交API，以及无模型密钥可运行的规则回退；
+- 后端依赖规则、Skill Manifest、评测契约和API流程测试；
+- 10个版本化接单评测案例；
+- 六个Skill和报价Tool的严格Pydantic／TypeScript契约。
 
-下一阶段P2将建立10个评测案例和稳定Schema；P3才开始实现需求提取与澄清Agent闭环。
+下一阶段P5实现范围、工时、风险、报价和方案生成，并在P6接入可持久化Checkpoint与人工审批。
 
 ## 架构概览
 
@@ -113,3 +116,6 @@ P3会实现OpenAI兼容网关和无密钥Mock网关；当前版本不调用任�
 - [AI Native Agent架构与学习路线](docs/05-AI-Native-Agent架构与学习路线.md)
 - [开发流程与项目进度表](docs/06-开发流程与项目进度表.md)
 - [系统架构设计](docs/07-系统架构设计.md)
+- [Prompt工程模板与作业记录规范](docs/08-Prompt工程模板与作业记录规范.md)
+- [Prompt迭代记录模板](docs/templates/Prompt迭代记录模板.md)
+- [P2评测与数据契约](docs/09-P2评测与数据契约.md)

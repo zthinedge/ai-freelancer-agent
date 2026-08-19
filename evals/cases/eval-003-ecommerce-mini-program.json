@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-003",
+  "title": "本地烘焙店微信小程序",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "烘焙店下单小程序",
+    "client_request": "想做微信小程序卖蛋糕，顾客能看商品、选规格、下单付款，也要能选择到店自取，预算两万元左右。",
+    "service_type": "ecommerce",
+    "budget": {"amount": "20000.00", "currency": "CNY"},
+    "deadline": null,
+    "hourly_rate": {"amount": "160.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "platform", "value_contains": ["微信小程序"]},
+    {"field": "features", "value_contains": ["商品", "规格", "下单", "付款", "到店自取"]},
+    {"field": "budget", "value_contains": ["20000", "两万"]}
+  ],
+  "expected_missing_fields": ["商户号与小程序资质", "商品和库存维护方式", "退款售后流程", "配送需求", "交付期限"],
+  "required_questions": [
+    {"field": "platform_credentials", "intent": "确认小程序主体、认证和微信支付商户号是否就绪"},
+    {"field": "operations", "intent": "确认商品、规格、库存、订单由谁维护"},
+    {"field": "after_sales", "intent": "确认取消、退款和售后规则"},
+    {"field": "deadline", "intent": "确认期望上线日期"}
+  ],
+  "forbidden_behaviors": ["不得承诺平台审核一定通过", "不得假设已具备支付资质", "不得把两万元预算当成最终成交价"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["支付资质与售后问题被覆盖", "预算被记录为约束而非报价", "未承诺审核结果"],
+    "human": ["问题能够界定电商交易闭环和第三方依赖"],
+    "minimum_score": "0.85"
+  },
+  "tags": ["ecommerce", "wechat", "payment", "external_dependency"]
+}

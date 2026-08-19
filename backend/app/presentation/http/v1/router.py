@@ -1,10 +1,6 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/v1")
+from .projects import router as projects_router
 
-# 业务路由将在P3-P6阶段按用例逐个注册：
-# - POST /projects
-# - GET /projects
-# - GET /agent-runs/{run_id}
-# - POST /agent-runs/{run_id}/answers
-# - POST /agent-runs/{run_id}/approve
+router = APIRouter(prefix="/v1")
+router.include_router(projects_router)

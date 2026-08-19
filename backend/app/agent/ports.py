@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from typing import Protocol
+from uuid import UUID
 
 from .contracts import (
     AgentState,
@@ -10,6 +11,13 @@ from .contracts import (
     ToolRequest,
     ToolResult,
 )
+from .schemas import ProjectBrief
+
+
+class IntakeAgent(Protocol):
+    async def analyze(self, run_id: UUID, project_id: UUID, brief: ProjectBrief) -> AgentState: ...
+
+    async def submit_answers(self, state: AgentState, answers: dict[str, str]) -> AgentState: ...
 
 
 class ModelGateway(Protocol):

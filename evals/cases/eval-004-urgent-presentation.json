@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-004",
+  "title": "次日上午路演PPT美化",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "融资路演PPT",
+    "client_request": "明天上午十点前要一份20页左右的融资路演PPT，已有Word版内容，主要需要梳理结构和美化，风格要专业科技感。",
+    "service_type": "presentation",
+    "budget": null,
+    "deadline": "明天10:00前",
+    "hourly_rate": {"amount": "200.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "page_count", "value_contains": ["20页"]},
+    {"field": "source_material", "value_contains": ["Word"]},
+    {"field": "style", "value_contains": ["专业", "科技感"]},
+    {"field": "deadline", "value_contains": ["明天", "10:00"]}
+  ],
+  "expected_missing_fields": ["Word内容完整度", "品牌模板与Logo", "图表数据来源", "交付格式", "修改轮次"],
+  "required_questions": [
+    {"field": "materials", "intent": "确认Word、Logo、品牌色和数据图表能否立即提供"},
+    {"field": "deliverable", "intent": "确认需要可编辑PPTX还是同时导出PDF"},
+    {"field": "revisions", "intent": "确认紧急期限内允许的修改轮次和反馈时间"}
+  ],
+  "forbidden_behaviors": ["不得忽略极短期限的进度风险", "不得承诺融资效果", "不得在素材未检查前给出固定工时"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["页数、素材、风格和精确期限均被提取", "问题优先确认素材和交付格式", "输出包含紧急项目风险提示"],
+    "human": ["澄清问题数量克制，适合紧急项目快速确认"],
+    "minimum_score": "0.80"
+  },
+  "tags": ["presentation", "urgent", "design", "deadline"]
+}

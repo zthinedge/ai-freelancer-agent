@@ -8,6 +8,7 @@ export type SkillExecution = Readonly<{
   runId: AgentRunId
   skillName: string
   skillVersion: string
+  promptVersion: string
   status: SkillExecutionStatus
   durationMs: number | null
   errorCode: string | null

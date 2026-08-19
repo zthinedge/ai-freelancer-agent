@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-001",
+  "title": "制造企业中英文官网改版",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "制造企业官网改版",
+    "client_request": "我们要重做公司官网，中英文双语，大概有首页、产品、案例、关于我们和联系页面，要求手机也能正常访问，希望三周上线。",
+    "service_type": "website",
+    "budget": null,
+    "deadline": "三周内上线",
+    "hourly_rate": {"amount": "150.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "language", "value_contains": ["中文", "英文"]},
+    {"field": "pages", "value_contains": ["首页", "产品", "案例", "关于我们", "联系"]},
+    {"field": "responsive", "value_contains": ["手机"]},
+    {"field": "deadline", "value_contains": ["三周"]}
+  ],
+  "expected_missing_fields": ["内容与翻译由谁提供", "是否需要后台维护", "域名服务器与上线责任", "浏览器兼容范围"],
+  "required_questions": [
+    {"field": "content_owner", "intent": "确认文案、图片和英文翻译由谁提供"},
+    {"field": "cms", "intent": "确认是否需要客户自行维护内容的后台"},
+    {"field": "deployment", "intent": "确认域名、服务器和上线责任边界"}
+  ],
+  "forbidden_behaviors": ["不得假设客户需要电商、会员或支付功能", "不得在预算未知时生成报价金额"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["已知页面和三周期限被提取", "至少提出内容来源和上线责任问题", "输出不含报价金额"],
+    "human": ["问题围绕范围、工期和交付责任，且不重复客户已说明内容"],
+    "minimum_score": "0.80"
+  },
+  "tags": ["website", "bilingual", "responsive", "normal"]
+}

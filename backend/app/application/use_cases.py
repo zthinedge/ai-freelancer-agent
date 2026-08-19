@@ -12,7 +12,7 @@ from .contracts import (
 
 
 class CreateProjectUseCase(Protocol):
-    async def execute(self, command: CreateProjectCommand) -> AgentRunView: ...
+    async def execute(self, command: CreateProjectCommand) -> ProjectView: ...
 
 
 class SubmitClarificationUseCase(Protocol):

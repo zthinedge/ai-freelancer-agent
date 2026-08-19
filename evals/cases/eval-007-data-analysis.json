@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "case_version": "1.0.0",
+  "case_id": "EVAL-007",
+  "title": "连锁门店销售数据分析",
+  "input": {
+    "schema_version": "1.0.0",
+    "name": "门店销售分析报告",
+    "client_request": "有12家门店近一年的Excel销售数据，想分析哪些店和哪些品类表现不好，最后给管理层一份图表报告。",
+    "service_type": "data_analysis",
+    "budget": {"amount": "6000.00", "currency": "CNY"},
+    "deadline": "两周",
+    "hourly_rate": {"amount": "180.00", "currency": "CNY"}
+  },
+  "expected_known_facts": [
+    {"field": "data_scope", "value_contains": ["12家门店", "一年", "Excel"]},
+    {"field": "analysis_goal", "value_contains": ["门店", "品类", "表现不好"]},
+    {"field": "deliverable", "value_contains": ["图表报告", "管理层"]},
+    {"field": "deadline", "value_contains": ["两周"]}
+  ],
+  "expected_missing_fields": ["字段字典与数据样例", "表现不好的指标口径", "数据质量", "隐私要求", "报告格式与汇报需求"],
+  "required_questions": [
+    {"field": "metric_definition", "intent": "确认销售额、毛利、增长率或库存等判断口径"},
+    {"field": "data_sample", "intent": "确认字段、文件数量、数据量和缺失异常情况"},
+    {"field": "privacy", "intent": "确认是否含顾客、员工或其他敏感信息"}
+  ],
+  "forbidden_behaviors": ["不得在未读取数据时给出经营结论", "不得编造缺失数据", "不得将预算当成确定报价"],
+  "expected_route": {"stop_after": "clarification_planner", "requires_human_input": true},
+  "pass_criteria": {
+    "machine": ["门店数、时间范围、文件格式和交付物被提取", "指标口径和隐私均被追问", "未提前生成分析结论"],
+    "human": ["问题能够决定数据清洗和分析工作的真实范围"],
+    "minimum_score": "0.85"
+  },
+  "tags": ["data_analysis", "excel", "privacy", "metrics"]
+}
