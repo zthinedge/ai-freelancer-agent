@@ -28,6 +28,9 @@ async def test_project_analysis_flow(app):
         assert run["current_step"] == "clarification_planner"
         assert 3 <= len(run["state"]["pending_questions"]) <= 6
         assert run["state"]["intake"]["project_type"] == "website"
+        assert run["state"]["execution_mode"] == "rule_fallback"
+        assert run["state"]["model_name"] is None
+        assert run["state"]["retrieved_context"]
 
         list_response = await client.get("/api/v1/projects")
         assert list_response.status_code == 200
@@ -37,8 +40,15 @@ async def test_project_analysis_flow(app):
         assert run_response.status_code == 200
         assert run_response.json()["id"] == run["id"]
 
+        early_approval = await client.post(
+            f"/api/v1/agent-runs/{run['id']}/approve",
+            json={"approved": True, "selected_tier": "standard"},
+        )
+        assert early_approval.status_code == 409
+        assert early_approval.json()["error_code"] == "invalid_state"
+
         answers = {
-            question["field"]: f"已确认：{question['field']}"
+            question["question_id"]: f"已确认：{question['question_id']}"
             for question in run["state"]["pending_questions"]
         }
         answer_response = await client.post(
@@ -47,9 +57,54 @@ async def test_project_analysis_flow(app):
         )
         assert answer_response.status_code == 200
         updated_run = answer_response.json()
-        assert updated_run["status"] == "completed"
+        assert updated_run["status"] == "waiting_approval"
+        assert updated_run["current_step"] == "proposal_writer"
         assert updated_run["state"]["pending_questions"] == []
         assert updated_run["state"]["clarification_approved"] is True
+        assert updated_run["state"]["quote_approved"] is False
+        assert updated_run["state"]["scope"]["must"]
+        assert updated_run["state"]["estimate"]["tasks"]
+        assert updated_run["state"]["risk_review"]["risks"]
+        assert [option["tier"] for option in updated_run["state"]["pricing"]["options"]] == [
+            "basic",
+            "standard",
+            "premium",
+        ]
+        assert updated_run["state"]["proposal"]["requires_human_approval"] is True
+
+        refreshed_projects = (await client.get("/api/v1/projects")).json()
+        assert refreshed_projects[0]["updated_at"] > project["updated_at"]
+
+        approval_response = await client.post(
+            f"/api/v1/agent-runs/{run['id']}/approve",
+            json={
+                "schema_version": "1.0.0",
+                "approved": True,
+                "selected_tier": "standard",
+                "note": "人工复核后采用标准版",
+            },
+        )
+        assert approval_response.status_code == 200
+        approved_run = approval_response.json()
+        assert approved_run["status"] == "completed"
+        assert approved_run["state"]["quote_approved"] is True
+        assert approved_run["state"]["selected_quote_tier"] == "standard"
+
+        memory = app.state.container.context_memory
+        assert memory is not None
+        remembered = await memory.search("企业官网 中英文 手机", limit=5)
+        assert any(item.source_id == f"project:{project['id']}" for item in remembered)
+
+        repeated_answers = await client.post(
+            f"/api/v1/agent-runs/{run['id']}/answers",
+            json={"schema_version": "1.0.0", "answers": answers},
+        )
+        assert repeated_answers.status_code == 409
+        assert repeated_answers.json()["error_code"] == "invalid_state"
+
+        persisted_run = await client.get(f"/api/v1/agent-runs/{run['id']}")
+        assert persisted_run.json()["status"] == "completed"
+        assert persisted_run.json()["state"]["quote_approved"] is True
 
 
 @pytest.mark.anyio

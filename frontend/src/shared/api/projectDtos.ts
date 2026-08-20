@@ -69,6 +69,83 @@ export type ApiClarificationDto = Readonly<{
   requires_human_input: true
 }>
 
+export type ApiScopeItemDto = Readonly<{
+  item_id: string
+  title: string
+  description: string
+  rationale: string
+}>
+
+export type ApiScopeDto = Readonly<{
+  schema_version: '1.0.0'
+  prompt_version: `${number}.${number}.${number}`
+  must: ReadonlyArray<ApiScopeItemDto>
+  should: ReadonlyArray<ApiScopeItemDto>
+  could: ReadonlyArray<ApiScopeItemDto>
+  wont: ReadonlyArray<ApiScopeItemDto>
+  blocked_by_missing_information: boolean
+}>
+
+export type ApiEstimatedTaskDto = Readonly<{
+  task_id: string
+  title: string
+  description: string
+  dependencies: ReadonlyArray<string>
+  min_hours: string
+  max_hours: string
+  estimate_basis: string
+  acceptance_criteria: ReadonlyArray<string>
+}>
+
+export type ApiEstimateDto = Readonly<{
+  schema_version: '1.0.0'
+  prompt_version: `${number}.${number}.${number}`
+  tasks: ReadonlyArray<ApiEstimatedTaskDto>
+  buffer_hours: string
+  uncertainty_notes: ReadonlyArray<string>
+}>
+
+export type ApiRiskReviewDto = Readonly<{
+  schema_version: '1.0.0'
+  prompt_version: `${number}.${number}.${number}`
+  risks: ReadonlyArray<{
+    risk_id: string
+    category: 'requirement' | 'technical' | 'schedule' | 'privacy' | 'commercial'
+    severity: 'low' | 'medium' | 'high'
+    cause: string
+    impact: string
+    mitigation: string
+    requires_human_decision: boolean
+  }>
+  human_decisions: ReadonlyArray<string>
+}>
+
+export type ApiQuoteOptionDto = Readonly<{
+  tier: 'basic' | 'standard' | 'premium'
+  amount: ApiMoneyDto
+  included_hours: string
+  calculation_summary: string
+}>
+
+export type ApiPricingDto = Readonly<{
+  schema_version: '1.0.0'
+  policy_version: `${number}.${number}.${number}`
+  options: readonly [ApiQuoteOptionDto, ApiQuoteOptionDto, ApiQuoteOptionDto]
+}>
+
+export type ApiProposalDto = Readonly<{
+  schema_version: '1.0.0'
+  prompt_version: `${number}.${number}.${number}`
+  document_status: 'ai_draft'
+  project_summary: string
+  deliverables: ReadonlyArray<string>
+  exclusions: ReadonlyArray<string>
+  acceptance_criteria: ReadonlyArray<string>
+  quote_options: readonly [ApiQuoteOptionDto, ApiQuoteOptionDto, ApiQuoteOptionDto]
+  disclaimers: ReadonlyArray<string>
+  requires_human_approval: true
+}>
+
 export type ApiAgentStateDto = Readonly<{
   schema_version: '1.0.0'
   run_id: string
@@ -79,13 +156,26 @@ export type ApiAgentStateDto = Readonly<{
   pending_questions: ReadonlyArray<ApiClarificationQuestionDto>
   intake: ApiIntakeDto | null
   clarification: ApiClarificationDto | null
-  scope: unknown
-  estimate: unknown
-  risk_review: unknown
-  pricing: unknown
-  proposal: unknown
+  scope: ApiScopeDto | null
+  estimate: ApiEstimateDto | null
+  risk_review: ApiRiskReviewDto | null
+  pricing: ApiPricingDto | null
+  proposal: ApiProposalDto | null
   clarification_approved: boolean
   quote_approved: boolean
+  selected_quote_tier: 'basic' | 'standard' | 'premium' | null
+  retrieved_context: ReadonlyArray<{
+    source_id: string
+    title: string
+    excerpt: string
+    score: number
+  }>
+  execution_mode: 'model' | 'rule_fallback'
+  model_name: string | null
+  fallback_reason: string | null
+  model_input_tokens: number | null
+  model_output_tokens: number | null
+  model_latency_ms: number | null
 }>
 
 export type ApiAgentRunDto = Readonly<{

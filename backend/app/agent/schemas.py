@@ -32,6 +32,13 @@ class PositiveMoney(Money):
     amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
 
 
+class RetrievedContext(ContractModel):
+    source_id: NonEmptyText
+    title: NonEmptyText
+    excerpt: str = Field(min_length=1, max_length=1200)
+    score: float = Field(ge=0, le=1)
+
+
 class ProjectBrief(ContractModel):
     schema_version: SchemaVersion = "1.0.0"
     name: str = Field(min_length=2, max_length=100)
@@ -40,6 +47,7 @@ class ProjectBrief(ContractModel):
     budget: Money | None = None
     deadline: str | None = Field(default=None, max_length=80)
     hourly_rate: PositiveMoney
+    retrieved_context: tuple[RetrievedContext, ...] = Field(default=(), max_length=5)
 
 
 class ConfirmedFact(ContractModel):
@@ -144,9 +152,9 @@ class EstimatedTask(ContractModel):
 class TaskEstimatorOutput(ContractModel):
     schema_version: SchemaVersion = "1.0.0"
     prompt_version: PromptVersion
-    tasks: tuple[EstimatedTask, ...] = Field(min_length=1)
+    tasks: tuple[EstimatedTask, ...] = Field(min_length=3, max_length=12)
     buffer_hours: Hours
-    uncertainty_notes: tuple[NonEmptyText, ...] = ()
+    uncertainty_notes: tuple[NonEmptyText, ...] = Field(default=(), max_length=8)
 
 
 class RiskReviewerInput(ContractModel):
@@ -170,8 +178,8 @@ class RiskItem(ContractModel):
 class RiskReviewerOutput(ContractModel):
     schema_version: SchemaVersion = "1.0.0"
     prompt_version: PromptVersion
-    risks: tuple[RiskItem, ...]
-    human_decisions: tuple[NonEmptyText, ...] = ()
+    risks: tuple[RiskItem, ...] = Field(max_length=10)
+    human_decisions: tuple[NonEmptyText, ...] = Field(default=(), max_length=10)
 
 
 class PricingToolInput(ContractModel):

@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-当前为`v0.3 Intake & Clarification MVP`，已完成P1-P4的架构、评测契约、后端Agent最小闭环和前端联调界面：
+当前为`v0.5 Memory + RAG + MCP MVP`，已经跑通从需求澄清到差异化报价和人工确认的主链路：
 
 - 后端模块化单体与清洁架构边界；
 - Agent状态、工作流、Skill、Tool和模型端口；
@@ -12,11 +12,16 @@
 - 前端Feature分层与领域类型；
 - 可交互的项目录入、搜索筛选、Agent步骤与澄清回答界面；
 - 项目、AgentRun和澄清提交API，以及无模型密钥可运行的规则回退；
+- DeepSeek V4服务端网关、JSON结构化输出、重试、Schema校验和自动降级；
 - 后端依赖规则、Skill Manifest、评测契约和API流程测试；
 - 10个版本化接单评测案例；
 - 六个Skill和报价Tool的严格Pydantic／TypeScript契约。
+- SQLite项目与AgentState持久化，后端重启后可恢复；
+- 本地中文／英文词法RAG，检索内置知识和已批准项目经验；
+- 基于官方Python SDK的只读MCP Streamable HTTP服务；
+- 范围、WBS、风险、确定性三级报价、方案和人工审批。
 
-下一阶段P5实现范围、工时、风险、报价和方案生成，并在P6接入可持久化Checkpoint与人工审批。
+下一阶段重点是完整Trace、可重试Checkpoint、Eval Runner、用户测试和部署材料。
 
 ## 架构概览
 
@@ -101,11 +106,20 @@ npm run build
 
 ```env
 APP_AI_API_KEY=
-APP_AI_BASE_URL=https://api.openai.com/v1
-APP_AI_MODEL=
+APP_AI_BASE_URL=https://api.deepseek.com
+APP_AI_MODEL=deepseek-v4-flash
+APP_AI_MAX_RETRIES=1
+APP_AI_MAX_TOKENS=4096
+APP_AI_THINKING_ENABLED=false
+APP_DATABASE_URL=sqlite:///./data/jiedan.db
+APP_RAG_ENABLED=true
+APP_RAG_TOP_K=3
+APP_MCP_ENABLED=true
 ```
 
-P3会实现OpenAI兼容网关和无密钥Mock网关；当前版本不调用任何外部模型。
+`APP_AI_API_KEY`为空时使用规则模式；配置Key并重启后端后，六个模型Skill调用DeepSeek。Key只由FastAPI读取，不得放入前端环境变量或网页表单。初始需求提取失败时使用规则Fallback，关键报价Skill失败时安全停止且不产生可批准报价。
+
+项目和Agent状态保存在`backend/data/jiedan.db`。MCP客户端连接`http://127.0.0.1:8000/mcp/`，可调用`search_knowledge`、`list_projects`并读取`project://{project_id}`资源；当前MCP接口刻意保持只读。
 
 ## 文档导航
 
@@ -119,3 +133,7 @@ P3会实现OpenAI兼容网关和无密钥Mock网关；当前版本不调用任�
 - [Prompt工程模板与作业记录规范](docs/08-Prompt工程模板与作业记录规范.md)
 - [Prompt迭代记录模板](docs/templates/Prompt迭代记录模板.md)
 - [P2评测与数据契约](docs/09-P2评测与数据契约.md)
+- [项目Roadmap](docs/10-项目Roadmap.md)
+- [DeepSeek接入与前后端密钥链路](docs/11-DeepSeek接入与前后端密钥链路.md)
+- [AI Skill编排与差异化报价](docs/12-AI-Skill编排与差异化报价.md)
+- [Memory、RAG与MCP实现说明](docs/13-Memory-RAG-MCP实现说明.md)

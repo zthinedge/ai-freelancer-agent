@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends, status
 
 from app.application.contracts import (
     AgentRunView,
+    ApproveQuoteCommand,
     CreateProjectCommand,
     ProjectView,
     SubmitClarificationCommand,
 )
 from app.application.services import ProjectAnalysisService
-from app.presentation.http.contracts import SubmitClarificationRequest
+from app.presentation.http.contracts import ApproveQuoteRequest, SubmitClarificationRequest
 from app.presentation.http.dependencies import get_project_analysis_service
 
 router = APIRouter(tags=["project-analysis"])
@@ -40,3 +41,18 @@ async def submit_answers(
 ) -> AgentRunView:
     command = SubmitClarificationCommand(run_id=run_id, answers=request.answers)
     return await service.submit_answers(command)
+
+
+@router.post("/agent-runs/{run_id}/approve", response_model=AgentRunView)
+async def approve_quote(
+    run_id: UUID,
+    request: ApproveQuoteRequest,
+    service: ProjectService,
+) -> AgentRunView:
+    command = ApproveQuoteCommand(
+        run_id=run_id,
+        approved=request.approved,
+        selected_tier=request.selected_tier,
+        note=request.note,
+    )
+    return await service.approve_quote(command)

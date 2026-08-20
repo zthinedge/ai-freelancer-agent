@@ -217,4 +217,17 @@ export type AgentState = Readonly<{
   proposal: ProposalWriterOutput | null
   clarificationApproved: boolean
   quoteApproved: boolean
+  selectedQuoteTier: QuoteTier | null
+  retrievedContext: ReadonlyArray<{
+    sourceId: string
+    title: string
+    excerpt: string
+    score: number
+  }>
+  executionMode: 'model' | 'rule_fallback'
+  modelName: string | null
+  fallbackReason: string | null
+  modelInputTokens: number | null
+  modelOutputTokens: number | null
+  modelLatencyMs: number | null
 }>

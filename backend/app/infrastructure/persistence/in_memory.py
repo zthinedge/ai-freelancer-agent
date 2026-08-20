@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from uuid import UUID
 
 from app.application.contracts import AgentRunView, ProjectView
@@ -25,11 +26,17 @@ class InMemoryProjectAnalysisStore(ProjectAnalysisStore):
             self._runs[run.id] = run
             project_id = self._project_by_run[run.id]
             project = self._projects[project_id]
-            self._projects[project_id] = project.model_copy(update={"run": run})
+            self._projects[project_id] = project.model_copy(
+                update={"run": run, "updated_at": datetime.now(UTC)}
+            )
 
     async def get_run(self, run_id: UUID) -> AgentRunView | None:
         async with self._lock:
             return self._runs.get(run_id)
+
+    async def get_project(self, project_id: UUID) -> ProjectView | None:
+        async with self._lock:
+            return self._projects.get(project_id)
 
     async def list_projects(self) -> Sequence[ProjectView]:
         async with self._lock:

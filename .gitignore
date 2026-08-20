@@ -18,8 +18,11 @@ venv/
 
 # Local data
 backend/data/*.db
+backend/data/*.db-*
 backend/data/*.sqlite
+backend/data/*.sqlite-*
 backend/data/*.sqlite3
+backend/data/*.sqlite3-*
 
 # Node / Vite
 node_modules/

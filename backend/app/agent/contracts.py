@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import Field
 
-from app.domain.enums import AgentRunStatus, WorkflowStep
+from app.domain.enums import AgentRunStatus, QuoteTier, WorkflowStep
 
 from .schemas import (
     ClarificationPlannerInput,
@@ -17,6 +17,7 @@ from .schemas import (
     ProposalWriterOutput,
     RequirementIntakeInput,
     RequirementIntakeOutput,
+    RetrievedContext,
     RiskReviewerInput,
     RiskReviewerOutput,
     ScopeDesignerInput,
@@ -43,6 +44,14 @@ class AgentState(ContractModel):
     proposal: ProposalWriterOutput | None = None
     clarification_approved: bool = False
     quote_approved: bool = False
+    selected_quote_tier: QuoteTier | None = None
+    retrieved_context: tuple[RetrievedContext, ...] = ()
+    execution_mode: Literal["model", "rule_fallback"] = "rule_fallback"
+    model_name: str | None = None
+    fallback_reason: str | None = None
+    model_input_tokens: int | None = Field(default=None, ge=0)
+    model_output_tokens: int | None = Field(default=None, ge=0)
+    model_latency_ms: int | None = Field(default=None, ge=0)
 
 
 class SkillRequestBase(ContractModel):
@@ -130,6 +139,7 @@ class ModelResponse(ContractModel):
     model: str
     input_tokens: int | None = None
     output_tokens: int | None = None
+    latency_ms: int | None = Field(default=None, ge=0)
 
 
 class ToolRequest(ContractModel):

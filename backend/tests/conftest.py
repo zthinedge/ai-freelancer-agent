@@ -9,5 +9,14 @@ def anyio_backend():
 
 
 @pytest.fixture()
-def app():
-    return create_app(Settings(environment="test", cors_origins=[]))
+def app(tmp_path):
+    database_url = f"sqlite:///{(tmp_path / 'test.db').as_posix()}"
+    return create_app(
+        Settings(
+            environment="test",
+            cors_origins=[],
+            ai_api_key=None,
+            database_url=database_url,
+            mcp_enabled=False,
+        )
+    )

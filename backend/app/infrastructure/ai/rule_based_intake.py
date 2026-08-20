@@ -12,6 +12,7 @@ from app.agent.schemas import (
     ProjectBrief,
     RequirementIntakeOutput,
 )
+from app.agent.workflow_completion import complete_clarification_workflow
 from app.domain.enums import (
     AgentRunStatus,
     FactSource,
@@ -256,30 +257,14 @@ class RuleBasedIntakeAgent(IntakeAgent):
             current_step=WorkflowStep.CLARIFICATION,
             confirmed_facts=facts,
             pending_questions=questions,
+            retrieved_context=brief.retrieved_context,
             intake=intake,
             clarification=clarification,
+            execution_mode="rule_fallback",
         )
 
     async def submit_answers(self, state: AgentState, answers: dict[str, str]) -> AgentState:
-        answer_facts = tuple(
-            ConfirmedFact(
-                field=field,
-                value=value,
-                source=FactSource.CLARIFICATION_ANSWER,
-                evidence=f"用户回答：{value}",
-            )
-            for field, value in answers.items()
-            if value.strip()
-        )
-        return state.model_copy(
-            update={
-                "status": AgentRunStatus.COMPLETED,
-                "current_step": WorkflowStep.CLARIFICATION,
-                "confirmed_facts": (*state.confirmed_facts, *answer_facts),
-                "pending_questions": (),
-                "clarification_approved": True,
-            }
-        )
+        return complete_clarification_workflow(state, answers)
 
     def _questions_for(self, service_type: ServiceType) -> Sequence[QuestionTemplate]:
         specialized = SERVICE_QUESTIONS.get(service_type, ())
@@ -288,12 +273,26 @@ class RuleBasedIntakeAgent(IntakeAgent):
     def _extract_facts(self, brief: ProjectBrief) -> tuple[ConfirmedFact, ...]:
         facts = [
             ConfirmedFact(
+                field="project_name",
+                value=brief.name,
+                source=FactSource.SYSTEM,
+                evidence="用户在项目表单中填写的项目名称",
+            ),
+            ConfirmedFact(
                 field="client_goal",
                 value=self._summarize(brief.client_request),
                 source=FactSource.CLIENT_REQUEST,
                 evidence=brief.client_request,
             )
         ]
+        facts.append(
+            ConfirmedFact(
+                field="hourly_rate",
+                value=f"{brief.hourly_rate.amount} {brief.hourly_rate.currency}",
+                source=FactSource.SYSTEM,
+                evidence="用户在项目表单中填写的接单时薪",
+            )
+        )
         if brief.service_type is not ServiceType.AUTO_DETECT:
             facts.append(
                 ConfirmedFact(

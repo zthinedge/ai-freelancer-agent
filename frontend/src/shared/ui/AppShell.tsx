@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 
+import type { AiRuntimeStatus } from '../api/systemStatus'
 import { PlusIcon, SearchIcon, SparklesIcon } from './Icons'
 
 type AppShellProps = Readonly<{
   children: ReactNode
   searchValue: string
   apiStatus: 'checking' | 'connected' | 'offline'
+  aiRuntime: AiRuntimeStatus | null
   onSearchChange: (value: string) => void
   onCreateProject: () => void
 }>
@@ -15,6 +17,7 @@ export function AppShell({
   children,
   searchValue,
   apiStatus,
+  aiRuntime,
   onSearchChange,
   onCreateProject,
 }: AppShellProps) {
@@ -59,6 +62,24 @@ export function AppShell({
         </label>
 
         <div className="header-actions">
+          <span
+            className={`model-mode ${aiRuntime?.mode ?? 'checking'}`}
+            title="模型密钥仅由后端环境变量读取，不会发送到浏览器"
+          >
+            {aiRuntime === null
+              ? '模式检查中'
+              : aiRuntime.mode === 'model'
+                ? formatModelName(aiRuntime.model)
+                : '规则模式'}
+          </span>
+          {aiRuntime !== null ? (
+            <span
+              className="model-mode model"
+              title={`Memory: ${aiRuntime.memoryBackend}；RAG: ${aiRuntime.ragEnabled ? '开启' : '关闭'}；MCP: ${aiRuntime.mcpEnabled ? '开启' : '关闭'}`}
+            >
+              Memory · RAG · MCP
+            </span>
+          ) : null}
           <span className={`live-status ${apiStatus}`} role="status">
             <i aria-hidden="true" />
             {apiStatus === 'connected'
@@ -84,4 +105,12 @@ export function AppShell({
       </nav>
     </div>
   )
+}
+
+function formatModelName(model: string): string {
+  return model
+    .replace(/^deepseek-/i, 'DeepSeek ')
+    .replace(/\bv(\d+)/i, 'V$1')
+    .replace(/\bflash\b/i, 'Flash')
+    .replace(/\bpro\b/i, 'Pro')
 }

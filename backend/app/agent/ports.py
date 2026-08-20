@@ -11,7 +11,7 @@ from .contracts import (
     ToolRequest,
     ToolResult,
 )
-from .schemas import ProjectBrief
+from .schemas import ProjectBrief, RetrievedContext
 
 
 class IntakeAgent(Protocol):
@@ -22,6 +22,19 @@ class IntakeAgent(Protocol):
 
 class ModelGateway(Protocol):
     async def complete(self, request: ModelRequest) -> ModelResponse: ...
+
+
+class ContextMemory(Protocol):
+    async def search(self, query: str, limit: int = 3) -> tuple[RetrievedContext, ...]: ...
+
+    async def remember(
+        self,
+        *,
+        source_id: str,
+        title: str,
+        content: str,
+        metadata: dict[str, str] | None = None,
+    ) -> None: ...
 
 
 class Skill(Protocol):

@@ -14,4 +14,8 @@ def health(request: Request) -> HealthResponse:
         status="ok",
         version=settings.version,
         environment=settings.environment,
+        ai_mode="model" if settings.ai_is_configured else "rule_fallback",
+        ai_model=settings.ai_model,
+        rag_enabled=settings.rag_enabled,
+        mcp_enabled=settings.mcp_enabled,
     )

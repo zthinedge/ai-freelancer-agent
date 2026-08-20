@@ -27,11 +27,23 @@ class Settings(BaseSettings):
     )
 
     ai_api_key: SecretStr | None = None
-    ai_base_url: str = "https://api.openai.com/v1"
-    ai_model: str = ""
-    ai_timeout_seconds: float = 15.0
+    ai_base_url: str = "https://api.deepseek.com"
+    ai_model: str = "deepseek-v4-flash"
+    ai_timeout_seconds: float = 30.0
+    ai_max_retries: int = Field(default=1, ge=0, le=3)
+    ai_max_tokens: int = Field(default=4096, ge=256, le=32768)
+    ai_thinking_enabled: bool = False
 
     database_url: str = "sqlite:///./data/jiedan.db"
+    rag_enabled: bool = True
+    rag_top_k: int = Field(default=3, ge=1, le=5)
+    mcp_enabled: bool = True
+
+    @property
+    def ai_is_configured(self) -> bool:
+        if self.ai_api_key is None:
+            return False
+        return bool(self.ai_api_key.get_secret_value().strip() and self.ai_model.strip())
 
 
 @lru_cache(maxsize=1)

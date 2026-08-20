@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent.contracts import AgentState
 from app.agent.schemas import Money, PositiveMoney
-from app.domain.enums import AgentRunStatus, ServiceType, WorkflowStep
+from app.domain.enums import AgentRunStatus, QuoteTier, ServiceType, WorkflowStep
 
 
 class ApplicationContract(BaseModel):
@@ -33,6 +33,7 @@ class ApproveQuoteCommand(ApplicationContract):
     schema_version: Literal["1.0.0"] = "1.0.0"
     run_id: UUID
     approved: bool
+    selected_tier: QuoteTier | None = None
     note: str | None = Field(default=None, max_length=500)
 
 

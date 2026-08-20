@@ -1,6 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 
 import type { ProjectAnalysis } from '../../entities/project-analysis/model/projectAnalysis'
+import type { QuoteTier } from '../../entities/agent-run/model/agentContracts'
 import { SERVICE_PRESENTATIONS } from '../../entities/project/model/serviceType'
 import type { ServiceType } from '../../entities/project/model/project'
 import { agentRunGateway } from '../../features/agent-run/api/httpAgentRunGateway'
@@ -8,18 +9,28 @@ import { AnalysisPanel } from '../../features/agent-run/ui/AnalysisPanel'
 import { projectIntakeGateway } from '../../features/project-intake/api/httpProjectIntakeGateway'
 import type { ProjectIntakeDraft } from '../../features/project-intake/model/contracts'
 import { ProjectComposer } from '../../features/project-intake/ui/ProjectComposer'
+import { quoteApprovalGateway } from '../../features/quote-approval/api/httpQuoteApprovalGateway'
+import { QuoteApprovalPanel } from '../../features/quote-approval/ui/QuoteApprovalPanel'
 import { projectListGateway } from '../../features/project-list/api/httpProjectListGateway'
 import { ProjectCard } from '../../features/project-list/ui/ProjectCard'
 import { HttpError } from '../../shared/api/fetchHttpClient'
+import { getSystemStatus } from '../../shared/api/systemStatus'
+import type { AiRuntimeStatus } from '../../shared/api/systemStatus'
 import { RefreshIcon } from '../../shared/ui/Icons'
 
 type WorkspacePageProps = Readonly<{
   searchValue: string
   focusSignal: number
   onApiStatusChange: (status: 'checking' | 'connected' | 'offline') => void
+  onAiRuntimeChange: (status: AiRuntimeStatus) => void
 }>
 
-export function WorkspacePage({ searchValue, focusSignal, onApiStatusChange }: WorkspacePageProps) {
+export function WorkspacePage({
+  searchValue,
+  focusSignal,
+  onApiStatusChange,
+  onAiRuntimeChange,
+}: WorkspacePageProps) {
   const deferredSearch = useDeferredValue(searchValue.trim().toLocaleLowerCase())
   const [projects, setProjects] = useState<ReadonlyArray<ProjectAnalysis>>([])
   const [selectedProject, setSelectedProject] = useState<ProjectAnalysis | null>(null)
@@ -27,14 +38,19 @@ export function WorkspacePage({ searchValue, focusSignal, onApiStatusChange }: W
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [isAnswering, setIsAnswering] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const loadProjects = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const items = await projectListGateway.listProjects()
+      const [items, systemStatus] = await Promise.all([
+        projectListGateway.listProjects(),
+        getSystemStatus(),
+      ])
       onApiStatusChange('connected')
+      onAiRuntimeChange(systemStatus)
       setProjects(items)
       setSelectedProject((current) => {
         if (current === null) return items[0] ?? null
@@ -46,7 +62,7 @@ export function WorkspacePage({ searchValue, focusSignal, onApiStatusChange }: W
     } finally {
       setIsLoading(false)
     }
-  }, [onApiStatusChange])
+  }, [onAiRuntimeChange, onApiStatusChange])
 
   useEffect(() => {
     void loadProjects()
@@ -93,14 +109,40 @@ export function WorkspacePage({ searchValue, focusSignal, onApiStatusChange }: W
         answers,
       })
       onApiStatusChange('connected')
-      const updated = { ...selectedProject, run, updatedAt: new Date().toISOString() }
+      const updated = { ...selectedProject, run }
       setSelectedProject(updated)
       setProjects((current) => current.map((project) => (project.id === updated.id ? updated : project)))
+      await loadProjects()
     } catch (requestError) {
       onApiStatusChange(requestError instanceof TypeError ? 'offline' : 'connected')
       setError(toMessage(requestError))
     } finally {
       setIsAnswering(false)
+    }
+  }
+
+  const handleApproveQuote = async (selectedTier: QuoteTier, note: string | null) => {
+    if (selectedProject === null || selectedProject.run === null) return
+    setIsApproving(true)
+    setError(null)
+    try {
+      const run = await quoteApprovalGateway.submit({
+        schemaVersion: '1.0.0',
+        runId: selectedProject.run.id,
+        approved: true,
+        selectedTier,
+        note,
+      })
+      onApiStatusChange('connected')
+      const updated = { ...selectedProject, run }
+      setSelectedProject(updated)
+      setProjects((current) => current.map((project) => (project.id === updated.id ? updated : project)))
+      await loadProjects()
+    } catch (requestError) {
+      onApiStatusChange(requestError instanceof TypeError ? 'offline' : 'connected')
+      setError(toMessage(requestError))
+    } finally {
+      setIsApproving(false)
     }
   }
 
@@ -110,7 +152,7 @@ export function WorkspacePage({ searchValue, focusSignal, onApiStatusChange }: W
         <div>
           <p className="eyebrow">AI-NATIVE FREELANCER WORKSPACE</p>
           <h1>把模糊需求，变成敢于确认的项目边界。</h1>
-          <p>Agent 负责发现信息缺口，你负责最终判断。当前运行在可测试的规则回退模式。</p>
+          <p>Agent 负责发现信息缺口，你负责最终判断。模型密钥只保存在后端，浏览器不会接触。</p>
         </div>
         <div className="welcome-stats" aria-label="项目统计">
           <span><b>{projects.length}</b><small>项目档案</small></span>
@@ -133,6 +175,16 @@ export function WorkspacePage({ searchValue, focusSignal, onApiStatusChange }: W
           isSubmitting={isAnswering}
           onSubmitAnswers={handleSubmitAnswers}
           onClose={() => setSelectedProject(null)}
+          quoteContent={
+            selectedProject?.run?.state.pricing && selectedProject.run.state.proposal ? (
+              <QuoteApprovalPanel
+                key={selectedProject.run.id}
+                state={selectedProject.run.state}
+                isSubmitting={isApproving}
+                onApprove={handleApproveQuote}
+              />
+            ) : null
+          }
         />
       </div>
 

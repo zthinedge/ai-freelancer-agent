@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 
 import type { ProjectAnalysis } from '../../../entities/project-analysis/model/projectAnalysis'
 import { getServicePresentation } from '../../../entities/project/model/serviceType'
@@ -10,6 +10,7 @@ type AnalysisPanelProps = Readonly<{
   isSubmitting: boolean
   onSubmitAnswers: (answers: Readonly<Record<string, string>>) => Promise<void>
   onClose: () => void
+  quoteContent: ReactNode
 }>
 
 const statusLabels = {
@@ -26,14 +27,15 @@ export function AnalysisPanel({
   isSubmitting,
   onSubmitAnswers,
   onClose,
+  quoteContent,
 }: AnalysisPanelProps) {
   const runId = project?.run?.id ?? null
   const questions = project?.run?.state.pendingQuestions ?? []
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [answersByQuestionId, setAnswersByQuestionId] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setAnswers({})
+    setAnswersByQuestionId({})
     setError(null)
   }, [runId])
 
@@ -58,15 +60,43 @@ export function AnalysisPanel({
   const { run } = project
   const service = getServicePresentation(project.serviceType)
   const completed = run.status === 'completed'
+  const failed = run.status === 'failed'
+  const hasQuote = run.state.pricing !== null && run.state.proposal !== null
+  const engineLabel =
+    run.state.executionMode === 'model'
+      ? run.state.modelName ?? 'AI 模型'
+      : run.state.fallbackReason === null
+        ? '规则模式'
+        : '模型降级 · 规则模式'
+  const engineDetails =
+    run.state.executionMode === 'model'
+      ? [
+          run.state.modelName,
+          run.state.fallbackReason,
+          run.state.modelInputTokens === null ? null : `输入 ${run.state.modelInputTokens} tokens`,
+          run.state.modelOutputTokens === null ? null : `输出 ${run.state.modelOutputTokens} tokens`,
+          run.state.modelLatencyMs === null ? null : `耗时 ${run.state.modelLatencyMs} ms`,
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      : run.state.fallbackReason ?? '当前项目使用本地规则模式，不调用外部模型'
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const unanswered = questions.find((question) => !answers[question.field]?.trim())
+    const unanswered = questions.find(
+      (question) => !answersByQuestionId[question.questionId]?.trim(),
+    )
     if (unanswered) {
       setError(`请先回答：${unanswered.question}`)
       return
     }
     setError(null)
+    const answers = Object.fromEntries(
+      questions.map((question) => [
+        question.questionId,
+        answersByQuestionId[question.questionId]?.trim() ?? '',
+      ]),
+    )
     await onSubmitAnswers(answers)
   }
 
@@ -89,17 +119,30 @@ export function AnalysisPanel({
         <div className="run-heading">
           <div>
             <p className="eyebrow">LIVE AGENT RUN</p>
-            <h3>{completed ? '需求澄清已完成' : 'Agent 需要你确认这些信息'}</h3>
+            <h3>
+              {completed
+                ? '方案与报价已确认'
+                : failed
+                  ? '自动分析已安全停止'
+                : hasQuote
+                  ? '请选择方案并人工确认报价'
+                  : 'Agent 需要你确认这些信息'}
+            </h3>
           </div>
-          <span className={`run-status ${run.status}`}>{statusLabels[run.status]}</span>
+          <div className="run-badges">
+            <span className={`engine-badge ${run.state.executionMode}`} title={engineDetails}>
+              {engineLabel}
+            </span>
+            <span className={`run-status ${run.status}`}>{statusLabels[run.status]}</span>
+          </div>
         </div>
 
         <div className="step-track" aria-label="Agent执行步骤">
           <span className="done">需求提取</span>
           <i />
-          <span className={completed ? 'done' : 'active'}>澄清问题</span>
+          <span className={run.state.clarificationApproved ? 'done' : 'active'}>澄清问题</span>
           <i />
-          <span>范围设计</span>
+          <span className={run.state.pricing ? (completed ? 'done' : 'active') : ''}>范围与报价</span>
         </div>
 
         <section className="facts-block">
@@ -117,12 +160,39 @@ export function AnalysisPanel({
           </div>
         </section>
 
-        {completed ? (
+        {run.state.retrievedContext.length > 0 ? (
+          <section className="facts-block" aria-label="RAG检索记忆">
+            <div className="block-title">
+              <h4>RAG参考记忆</h4>
+              <span>{run.state.retrievedContext.length} 条</span>
+            </div>
+            <div className="fact-pills">
+              {run.state.retrievedContext.map((item, index) => (
+                <span key={`${item.sourceId}-${index}`} title={item.excerpt}>
+                  <small>相关度 {Math.round(item.score * 100)}%</small>
+                  {item.title}
+                </span>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {run.state.pricing && run.state.proposal ? (
+          quoteContent
+        ) : completed ? (
           <div className="completion-card">
             <span aria-hidden="true">✓</span>
             <div>
               <h4>信息已合并到项目状态</h4>
               <p>下一阶段会继续生成范围、工时、风险和报价方案。</p>
+            </div>
+          </div>
+        ) : failed ? (
+          <div className="completion-card" role="alert">
+            <span aria-hidden="true">!</span>
+            <div>
+              <h4>自动分析已安全停止</h4>
+              <p>{run.state.fallbackReason ?? '模型未能生成可靠结果，当前不会产生可批准报价。'}</p>
             </div>
           </div>
         ) : (
@@ -138,9 +208,12 @@ export function AnalysisPanel({
                   <strong>{question.question}</strong>
                   <small>{question.reason}</small>
                   <input
-                    value={answers[question.field] ?? ''}
+                    value={answersByQuestionId[question.questionId] ?? ''}
                     onChange={(event) =>
-                      setAnswers((current) => ({ ...current, [question.field]: event.target.value }))
+                      setAnswersByQuestionId((current) => ({
+                        ...current,
+                        [question.questionId]: event.target.value,
+                      }))
                     }
                     placeholder="输入客户回答或你的确认结果"
                   />
